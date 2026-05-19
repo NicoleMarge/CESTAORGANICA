@@ -2,7 +2,6 @@ package com.example.huertohogardefinitiveedition.supabase
 
 import io.github.jan.supabase.SupabaseClient
 import io.github.jan.supabase.createSupabaseClient
-import io.github.jan.supabase.gotrue.GoTrue
 import io.github.jan.supabase.postgrest.Postgrest
 
 object SupabaseConfig {
@@ -16,6 +15,5 @@ object SupabaseConfig {
         supabaseKey = SUPABASE_KEY
     ) {
         install(Postgrest)
-        install(GoTrue)
     }
 }
