@@ -1,5 +1,6 @@
 package com.example.huertohogardefinitiveedition.ui.registro
 
+import android.widget.Toast
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
@@ -11,6 +12,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
@@ -18,10 +20,13 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.compose.material3.lightColorScheme
 import com.example.huertohogardefinitiveedition.data.model.Credential
-import com.example.huertohogardefinitiveedition.data.repository.UserRepository
+import kotlinx.coroutines.launch
 
 @Composable
 fun RegistrarseScreen(navController: NavController) {
+
+    val context = LocalContext.current
+    val scope = rememberCoroutineScope()
 
     val HuertoHogarColors = lightColorScheme(
         primary = Color(0xFF4CAF50),
@@ -224,13 +229,17 @@ fun RegistrarseScreen(navController: NavController) {
                             password = clave
                         )
 
-                        val res = UserRepository.register(candidate)
-                        res.onSuccess {
-                            showDialog = true
-                            // (opcional) limpiar campos:
-                            // nombre=""; correo=""; usuario=""; telefono=""; direccion=""; clave=""; confirmar=""
-                        }.onFailure { e ->
-                            errorMsg = e.message ?: "No fue posible registrar"
+                        // Ejecutamos la tarea de internet usando la corrutina en segundo plano
+                        scope.launch {
+                            try {
+                                com.example.huertohogardefinitiveedition.supabase.SupabaseUserRepository.registrarUsuario(candidate)
+                                showDialog = true
+
+                                // Opcional: limpiar campos tras el éxito
+                                nombre = ""; correo = ""; usuario = ""; telefono = ""; direccion = ""; clave = ""; confirmar = ""
+                            } catch (e: Exception) {
+                                errorMsg = "Error al guardar en Supabase: ${e.localizedMessage}"
+                            }
                         }
                     },
                     modifier = Modifier
@@ -264,7 +273,7 @@ fun RegistrarseScreen(navController: NavController) {
                 AlertDialog(
                     onDismissRequest = { showDialog = false },
                     title = { Text("Registro exitoso 🎉") },
-                    text = { Text("Tu cuenta ha sido creada correctamente.") },
+                    text = { Text("Tu cuenta ha sido creada correctamente en Supabase.") },
                     confirmButton = {
                         TextButton(
                             onClick = {

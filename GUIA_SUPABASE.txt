@@ -1,0 +1,99 @@
+# CONFIGURACIÓN SUPABASE - CESTA ORGANICA
+
+## 1. Crear repositorio GitHub
+
+Nombre recomendado:
+CESTAORGANICA
+
+Pasos:
+1. Ingresar a GitHub.
+2. Crear nuevo repositorio.
+3. Nombre: CESTAORGANICA
+4. Público o privado.
+5. Crear repositorio.
+
+## 2. Crear proyectos en Supabase
+
+Crear 2 proyectos:
+
+1. cesta-organica-prod
+2. cesta-organica-qa
+
+Plan gratuito:
+Supabase permite crear proyectos gratis.
+
+## 3. Obtener URL y API KEY
+
+En Supabase:
+Project Settings -> API
+
+Copiar:
+- Project URL
+- anon public key
+
+## 4. Configurar Android Studio
+
+Abrir:
+SupabaseConfig.kt
+
+Reemplazar:
+
+https://TU-PROYECTO.supabase.co
+
+y
+
+TU_ANON_KEY
+
+## 5. Crear tabla usuarios
+
+Abrir:
+SQL Editor en Supabase
+
+Ejecutar:
+SUPABASE_SCRIPT.sql
+
+## 6. Sincronizar proyecto
+
+Android Studio:
+File -> Sync Project with Gradle Files
+
+## 7. Resultado esperado
+
+Cuando el usuario se registre:
+- quedará guardado en Supabase
+- podrá iniciar sesión desde cualquier lugar
+- los datos estarán en la nube
+
+## 8. Arquitectura recomendada para la evaluación
+
+Android Studio (Frontend)
+↓
+Supabase Cloud
+↓
+PostgreSQL
+
+## 9. Ambiente QA y PROD
+
+QA:
+cesta-organica-qa
+- pruebas
+- desarrollo
+
+PROD:
+cesta-organica-prod
+- producción final
+- usuarios reales
+
+## 10. Respaldo de base de datos
+
+Supabase:
+Settings -> Database -> Backups
+
+Permite evidenciar respaldo cloud para la rúbrica.
+
+## 11. Buenas prácticas
+
+- No subir claves privadas a GitHub
+- Usar solamente anon key
+- Separar QA y PROD
+- Mantener respaldo periódico
