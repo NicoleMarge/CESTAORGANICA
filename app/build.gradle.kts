@@ -3,11 +3,11 @@ plugins {
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
 
+    id("org.jetbrains.kotlin.plugin.serialization") version "2.0.21"
+
     // Agregar esto para habilitar KAPT
     kotlin("kapt")
 
-    // 🟢 CORRECCIÓN: Plugin necesario para que funcione @Serializable
-    kotlin("plugin.serialization") version "2.0.0"
 }
 
 android {
@@ -46,6 +46,8 @@ android {
 }
 
 dependencies {
+
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.3")
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
