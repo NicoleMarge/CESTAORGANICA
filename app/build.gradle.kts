@@ -3,11 +3,11 @@ plugins {
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
 
-
     // Agregar esto para habilitar KAPT
-
     kotlin("kapt")
 
+    // 🟢 CORRECCIÓN: Plugin necesario para que funcione @Serializable
+    kotlin("plugin.serialization") version "2.0.0"
 }
 
 android {
@@ -59,35 +59,31 @@ dependencies {
     // Dependencia para la navegación con Jetpack Compose
     implementation("androidx.navigation:navigation-compose:2.7.7")
 
-
     // Íconos (core opcional) y EXTENDIDOS (¡este es el clave!)
     implementation("androidx.compose.material:material-icons-core")
     implementation("androidx.compose.material:material-icons-extended")
-
 
     // Dependencias Room
     implementation("androidx.room:room-runtime:2.6.1")  // Versión actualizada
     kapt("androidx.room:room-compiler:2.6.1")          // Misma versión
     implementation("androidx.room:room-ktx:2.6.1")     // Misma versión
 
-// implementation(libs.androidx.compose.runtime.livedata)
-// Option 1: If you add it to libs.versions.toml
-//implementation(libs.androidx.compose.runtime.livedata)
-// OR Option 2: Direct notation
+    // LiveData para Compose
     implementation("androidx.compose.runtime:runtime-livedata:1.5.4")
-// CameraX
+
+    // CameraX
     val camerax_version = "1.3.3"
     implementation("androidx.camera:camera-core:$camerax_version")
     implementation("androidx.camera:camera-camera2:$camerax_version")
     implementation("androidx.camera:camera-lifecycle:$camerax_version")
     implementation("androidx.camera:camera-view:$camerax_version")
 
-// ZXing para leer QR
+    // ZXing para leer QR
     implementation("com.google.zxing:core:3.5.3")
     implementation("com.journeyapps:zxing-android-embedded:4.3.0")
-// ML Kit Barcode Scanning
-    implementation("com.google.mlkit:barcode-scanning:17.2.0")
 
+    // ML Kit Barcode Scanning
+    implementation("com.google.mlkit:barcode-scanning:17.2.0")
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
@@ -102,6 +98,10 @@ dependencies {
     // =========================
     implementation("io.github.jan-tennert.supabase:postgrest-kt:2.5.4")
     implementation("io.github.jan-tennert.supabase:realtime-kt:2.5.4")
-    implementation("io.ktor:ktor-client-android:2.3.12")
 
+    // 🟢 CORRECCIÓN: Librerías faltantes para procesar datos y autenticar en Supabase
+    implementation("io.github.jan-tennert.supabase:gotrue-kt:2.5.4")
+    implementation("io.ktor:ktor-client-serialization:2.3.12")
+
+    implementation("io.ktor:ktor-client-android:2.3.12")
 }
