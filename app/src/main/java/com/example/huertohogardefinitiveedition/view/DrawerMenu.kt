@@ -7,6 +7,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Logout
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -21,8 +22,11 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
+
+import com.example.huertohogardefinitiveedition.data.model.Categoria
 import com.example.huertohogardefinitiveedition.data.model.Credential
 import com.example.huertohogardefinitiveedition.data.session.SessionManager
 import com.example.huertohogardefinitiveedition.viewmodel.DrawerMenuViewModel
@@ -32,10 +36,18 @@ import com.example.huertohogardefinitiveedition.viewmodel.DrawerMenuViewModel
 fun DrawerMenu(
     username: String,
     navController: NavController,
-    viewModel: DrawerMenuViewModel
+    viewModel: DrawerMenuViewModel = viewModel()
 ) {
-    // Estado que viene del ViewModel
+
+    // =========================
+    // ESTADO VIEWMODEL
+    // =========================
+
     val categoriasState = viewModel.categorias.value
+
+    // =========================
+    // COLORES APP
+    // =========================
 
     val huertoHogarColors = lightColorScheme(
         primary = Color(0xFF4CAF50),
@@ -46,255 +58,612 @@ fun DrawerMenu(
         onSurface = Color(0xFF3A3A3A)
     )
 
+    // =========================
+    // SESIÓN
+    // =========================
+
     val current = SessionManager.currentUser
-    val displayName = current?.nombre?.takeIf { it.isNotBlank() } ?: current?.usuario ?: username
+
+    val displayName =
+        current?.nombre?.takeIf {
+            it.isNotBlank()
+        }
+            ?: current?.usuario
+            ?: username
+
     val isAdmin =
-        (current?.idUsuario == Credential.Admin.idUsuario) ||
-                (current?.usuario?.equals(Credential.Admin.usuario, ignoreCase = true) == true)
+        (current?.idUsuario == Credential.Admin.idUsuario)
+                ||
+                (
+                        current?.usuario?.equals(
+                            Credential.Admin.usuario,
+                            ignoreCase = true
+                        ) == true
+                        )
 
-    var menuOpen by remember { mutableStateOf(false) }
+    // =========================
+    // ESTADOS
+    // =========================
 
-    // null = mostrar TODOS los productos
-    var categoriaSeleccionada by remember {
-        mutableStateOf<com.example.huertohogardefinitiveedition.data.model.Categoria?>(null)
+    var menuOpen by remember {
+        mutableStateOf(false)
     }
 
+    var categoriaSeleccionada by remember {
+        mutableStateOf<Categoria?>(null)
+    }
+
+    // =========================
+    // VALIDAR CATEGORÍA
+    // =========================
+
     LaunchedEffect(categoriasState) {
-        if (categoriaSeleccionada != null && !categoriasState.contains(categoriaSeleccionada)) {
+
+        if (
+            categoriaSeleccionada != null &&
+            !categoriasState.contains(categoriaSeleccionada)
+        ) {
             categoriaSeleccionada = null
         }
     }
 
-    // Lista que decide qué productos mostrar
-    val productosAMostrar = if (categoriaSeleccionada == null) {
-        categoriasState.flatMap { it.productos }
-    } else {
-        categoriaSeleccionada!!.productos
-    }
+    // =========================
+    // PRODUCTOS A MOSTRAR
+    // =========================
 
-    MaterialTheme(colorScheme = huertoHogarColors) {
+    val productosAMostrar =
+        if (categoriaSeleccionada == null) {
+
+            categoriasState.flatMap {
+                it.productos
+            }
+
+        } else {
+
+            categoriaSeleccionada!!.productos
+        }
+
+    // =========================
+    // THEME
+    // =========================
+
+    MaterialTheme(
+        colorScheme = huertoHogarColors
+    ) {
+
         Scaffold(
+
+            // =========================
+            // TOP BAR
+            // =========================
+
             topBar = {
+
                 TopAppBar(
+
                     title = {
+
                         Column {
+
                             Text(
                                 text = "Perfil: $displayName",
-                                style = MaterialTheme.typography.titleMedium
+                                style =
+                                    MaterialTheme.typography.titleMedium
                             )
-                            current?.correo?.takeIf { it.isNotBlank() }?.let { correo ->
-                                Text(
-                                    text = correo,
-                                    style = MaterialTheme.typography.bodySmall,
-                                    color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.85f)
-                                )
-                            }
+
+                            current?.correo
+                                ?.takeIf {
+                                    it.isNotBlank()
+                                }
+                                ?.let { correo ->
+
+                                    Text(
+                                        text = correo,
+
+                                        style =
+                                            MaterialTheme.typography.bodySmall,
+
+                                        color =
+                                            MaterialTheme.colorScheme.onPrimary
+                                                .copy(alpha = 0.85f)
+                                    )
+                                }
                         }
                     },
+
                     actions = {
-                        IconButton(onClick = { menuOpen = true }) {
-                            Icon(Icons.Default.MoreVert, contentDescription = "Menú de perfil")
+
+                        // =========================
+                        // BOTÓN MENÚ
+                        // =========================
+
+                        IconButton(
+                            onClick = {
+                                menuOpen = true
+                            }
+                        ) {
+
+                            Icon(
+                                Icons.Default.MoreVert,
+                                contentDescription = "Menú"
+                            )
                         }
+
+                        // =========================
+                        // DROPDOWN MENU
+                        // =========================
 
                         DropdownMenu(
                             expanded = menuOpen,
-                            onDismissRequest = { menuOpen = false }
+
+                            onDismissRequest = {
+                                menuOpen = false
+                            }
                         ) {
+
+                            // PERFIL
+
                             DropdownMenuItem(
-                                text = { Text("Mi Perfil") },
-                                leadingIcon = { Icon(Icons.Default.Person, contentDescription = null) },
+
+                                text = {
+                                    Text("Mi Perfil")
+                                },
+
+                                leadingIcon = {
+
+                                    Icon(
+                                        Icons.Default.Person,
+                                        contentDescription = null
+                                    )
+                                },
+
                                 onClick = {
+
                                     menuOpen = false
-                                    navController.navigate("gestion_perfil")
+
+                                    navController.navigate(
+                                        "gestion_perfil"
+                                    )
                                 }
                             )
 
+                            // HISTORIAL
+
                             DropdownMenuItem(
-                                text = { Text("Historial de pedidos") },
-                                leadingIcon = { Icon(Icons.Default.History, contentDescription = null) },
+
+                                text = {
+                                    Text("Historial de pedidos")
+                                },
+
+                                leadingIcon = {
+
+                                    Icon(
+                                        Icons.Default.History,
+                                        contentDescription = null
+                                    )
+                                },
+
                                 onClick = {
+
                                     menuOpen = false
-                                    navController.navigate("historial_pedidos")
+
+                                    navController.navigate(
+                                        "historial_pedidos"
+                                    )
                                 }
                             )
 
+                            // BLOCK
+
                             DropdownMenuItem(
-                                text = { Text("Block") },
-                                leadingIcon = { Icon(Icons.Default.Apps, contentDescription = null) },
+
+                                text = {
+                                    Text("Block")
+                                },
+
+                                leadingIcon = {
+
+                                    Icon(
+                                        Icons.Default.Apps,
+                                        contentDescription = null
+                                    )
+                                },
+
                                 onClick = {
+
                                     menuOpen = false
-                                    navController.navigate("block")
+
+                                    navController.navigate(
+                                        "block"
+                                    )
                                 }
                             )
 
+                            // CARRITO
+
                             DropdownMenuItem(
-                                text = { Text("Carrito (próximamente)") },
-                                leadingIcon = { Icon(Icons.Default.ShoppingCart, contentDescription = null) },
+
+                                text = {
+                                    Text("Carrito")
+                                },
+
+                                leadingIcon = {
+
+                                    Icon(
+                                        Icons.Default.ShoppingCart,
+                                        contentDescription = null
+                                    )
+                                },
+
                                 onClick = {
+
                                     menuOpen = false
-                                    navController.navigate("carrito")
+
+                                    navController.navigate(
+                                        "carrito"
+                                    )
                                 }
                             )
+
+                            // ADMIN
 
                             if (isAdmin) {
+
                                 DropdownMenuItem(
-                                    text = { Text("Gestionar usuarios") },
-                                    leadingIcon = { Icon(Icons.Default.AdminPanelSettings, contentDescription = null) },
+
+                                    text = {
+                                        Text("Gestionar usuarios")
+                                    },
+
+                                    leadingIcon = {
+
+                                        Icon(
+                                            Icons.Default.AdminPanelSettings,
+                                            contentDescription = null
+                                        )
+                                    },
+
                                     onClick = {
+
                                         menuOpen = false
-                                        navController.navigate("gestion_usuarios")
+
+                                        navController.navigate(
+                                            "gestion_usuarios"
+                                        )
                                     }
                                 )
                             }
 
                             HorizontalDivider()
 
+                            // LOGOUT
+
                             DropdownMenuItem(
-                                text = { Text("Cerrar sesión") },
-                                leadingIcon = { Icon(Icons.Default.Logout, contentDescription = null) },
+
+                                text = {
+                                    Text("Cerrar sesión")
+                                },
+
+                                leadingIcon = {
+
+                                    Icon(
+                                        Icons.AutoMirrored.Filled.Logout,
+                                        contentDescription = null
+                                    )
+                                },
+
                                 onClick = {
+
                                     menuOpen = false
+
                                     SessionManager.logout()
-                                    navController.navigate("login") {
-                                        popUpTo(0) { inclusive = true }
+
+                                    navController.navigate(
+                                        "login"
+                                    ) {
+
+                                        popUpTo(0) {
+                                            inclusive = true
+                                        }
+
                                         launchSingleTop = true
                                     }
                                 }
                             )
                         }
                     },
+
                     colors = TopAppBarDefaults.topAppBarColors(
-                        containerColor = MaterialTheme.colorScheme.primary,
-                        titleContentColor = MaterialTheme.colorScheme.onPrimary,
-                        actionIconContentColor = MaterialTheme.colorScheme.onPrimary
+
+                        containerColor =
+                            MaterialTheme.colorScheme.primary,
+
+                        titleContentColor =
+                            MaterialTheme.colorScheme.onPrimary,
+
+                        actionIconContentColor =
+                            MaterialTheme.colorScheme.onPrimary
                     )
                 )
             }
+
         ) { innerPadding ->
 
             Column(
+
                 modifier = Modifier
                     .padding(innerPadding)
                     .fillMaxSize()
             ) {
 
                 // =========================
-                // FILTROS / CATEGORÍAS
+                // FILTROS
                 // =========================
+
                 LazyRow(
+
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(vertical = 8.dp),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    contentPadding = PaddingValues(horizontal = 16.dp)
+
+                    horizontalArrangement =
+                        Arrangement.spacedBy(8.dp),
+
+                    contentPadding =
+                        PaddingValues(horizontal = 16.dp)
                 ) {
 
+                    // =========================
                     // BOTÓN ESCANEAR
+                    // =========================
+
                     item {
+
                         FilterChip(
+
                             selected = false,
-                            onClick = { navController.navigate("QRScannerScreen") },
-                            label = { Text("Escanear") },
+
+                            onClick = {
+
+                                navController.navigate(
+                                    "QRScannerScreen"
+                                )
+                            },
+
+                            label = {
+                                Text("Escanear")
+                            },
+
                             leadingIcon = {
-                                Icon(Icons.Default.QrCodeScanner, contentDescription = "QR")
+
+                                Icon(
+                                    Icons.Default.QrCodeScanner,
+                                    contentDescription = "QR"
+                                )
                             }
                         )
                     }
 
+                    // =========================
                     // BOTÓN TODOS
+                    // =========================
+
                     item {
+
                         FilterChip(
-                            selected = (categoriaSeleccionada == null),
-                            onClick = { categoriaSeleccionada = null },
-                            label = { Text("Todos") },
+
+                            selected =
+                                categoriaSeleccionada == null,
+
+                            onClick = {
+                                categoriaSeleccionada = null
+                            },
+
+                            label = {
+                                Text("Todos")
+                            },
+
                             leadingIcon = {
-                                Icon(Icons.Default.Storefront, contentDescription = "Todos")
+
+                                Icon(
+                                    Icons.Default.Storefront,
+                                    contentDescription = "Todos"
+                                )
                             }
                         )
                     }
 
+                    // =========================
                     // CATEGORÍAS
+                    // =========================
+
                     items(categoriasState) { categoria ->
+
                         FilterChip(
-                            selected = (categoria.nombre == categoriaSeleccionada?.nombre),
-                            onClick = { categoriaSeleccionada = categoria },
-                            label = { Text(categoria.nombre) },
+
+                            selected =
+                                categoria.nombre ==
+                                        categoriaSeleccionada?.nombre,
+
+                            onClick = {
+
+                                categoriaSeleccionada =
+                                    categoria
+                            },
+
+                            label = {
+                                Text(categoria.nombre)
+                            },
+
                             leadingIcon = {
-                                Icon(categoria.icono, contentDescription = categoria.nombre)
+
+                                Icon(
+                                    categoria.icono,
+                                    contentDescription =
+                                        categoria.nombre
+                                )
                             }
                         )
                     }
                 }
 
                 // =========================
-                // LISTA DE PRODUCTOS
+                // PRODUCTOS
                 // =========================
+
                 LazyColumn(
                     modifier = Modifier.weight(1f)
                 ) {
+
                     items(productosAMostrar) { producto ->
+
                         Card(
+
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(horizontal = 16.dp, vertical = 8.dp),
-                            elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+                                .padding(
+                                    horizontal = 16.dp,
+                                    vertical = 8.dp
+                                ),
+
+                            elevation =
+                                CardDefaults.cardElevation(
+                                    defaultElevation = 2.dp
+                                ),
+
                             onClick = {
-                                val nombreNav = Uri.encode(producto.nombre)
-                                val precioNav = producto.precio
-                                val descripcionNav = Uri.encode(producto.descripcion)
+
+                                val nombreNav =
+                                    Uri.encode(
+                                        producto.nombre
+                                    )
+
+                                val precioNav =
+                                    producto.precio
+
+                                val descripcionNav =
+                                    Uri.encode(
+                                        producto.descripcion
+                                    )
 
                                 navController.navigate(
                                     "ProductoFormScreen/$nombreNav/$precioNav/$descripcionNav/${producto.stock}"
                                 )
                             }
                         ) {
+
                             Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                verticalAlignment = Alignment.CenterVertically
+
+                                modifier =
+                                    Modifier.fillMaxWidth(),
+
+                                verticalAlignment =
+                                    Alignment.CenterVertically
                             ) {
+
+                                // IMAGEN
+
                                 Image(
-                                    painter = painterResource(id = producto.imagenResId),
-                                    contentDescription = producto.nombre,
-                                    modifier = Modifier
-                                        .size(100.dp)
-                                        .padding(8.dp),
-                                    contentScale = ContentScale.Crop
+
+                                    painter =
+                                        painterResource(
+                                            id =
+                                                producto.imagenResId
+                                        ),
+
+                                    contentDescription =
+                                        producto.nombre,
+
+                                    modifier =
+                                        Modifier
+                                            .size(100.dp)
+                                            .padding(8.dp),
+
+                                    contentScale =
+                                        ContentScale.Crop
                                 )
 
+                                // INFO PRODUCTO
+
                                 Column(
-                                    modifier = Modifier
-                                        .weight(1f)
-                                        .padding(vertical = 8.dp)
+
+                                    modifier =
+                                        Modifier
+                                            .weight(1f)
+                                            .padding(vertical = 8.dp)
                                 ) {
+
                                     Text(
-                                        text = producto.nombre,
-                                        style = MaterialTheme.typography.titleMedium,
-                                        fontWeight = FontWeight.Bold
+
+                                        text =
+                                            producto.nombre,
+
+                                        style =
+                                            MaterialTheme.typography.titleMedium,
+
+                                        fontWeight =
+                                            FontWeight.Bold
                                     )
 
-                                    Spacer(modifier = Modifier.height(4.dp))
+                                    Spacer(
+                                        modifier =
+                                            Modifier.height(4.dp)
+                                    )
 
                                     Text(
-                                        text = producto.descripcion,
-                                        style = MaterialTheme.typography.bodySmall,
+
+                                        text =
+                                            producto.descripcion,
+
+                                        style =
+                                            MaterialTheme.typography.bodySmall,
+
                                         maxLines = 2
                                     )
 
-                                    Spacer(modifier = Modifier.height(8.dp))
-
-                                    Text(
-                                        text = "Quedan: ${producto.stock}",
-                                        style = MaterialTheme.typography.bodySmall,
-                                        color = if (producto.stock < 10) Color.Red else Color.Gray,
-                                        modifier = Modifier.align(Alignment.Start)
+                                    Spacer(
+                                        modifier =
+                                            Modifier.height(8.dp)
                                     )
 
                                     Text(
-                                        text = "$${producto.precio}",
-                                        style = MaterialTheme.typography.bodyLarge,
-                                        color = MaterialTheme.colorScheme.primary,
-                                        fontWeight = FontWeight.Bold,
-                                        modifier = Modifier.align(Alignment.End)
+
+                                        text =
+                                            "Quedan: ${producto.stock}",
+
+                                        style =
+                                            MaterialTheme.typography.bodySmall,
+
+                                        color =
+                                            if (producto.stock < 10)
+                                                Color.Red
+                                            else
+                                                Color.Gray,
+
+                                        modifier =
+                                            Modifier.align(
+                                                Alignment.Start
+                                            )
+                                    )
+
+                                    Text(
+
+                                        text =
+                                            "$${producto.precio}",
+
+                                        style =
+                                            MaterialTheme.typography.bodyLarge,
+
+                                        color =
+                                            MaterialTheme.colorScheme.primary,
+
+                                        fontWeight =
+                                            FontWeight.Bold,
+
+                                        modifier =
+                                            Modifier.align(
+                                                Alignment.End
+                                            )
                                     )
                                 }
                             }
@@ -302,28 +671,50 @@ fun DrawerMenu(
                     }
                 }
 
+                // =========================
+                // FOOTER
+                // =========================
+
                 Text(
+
                     text = "@ 2025 Huerto Hogar App",
-                    style = MaterialTheme.typography.bodySmall,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp),
-                    textAlign = TextAlign.Center
+
+                    style =
+                        MaterialTheme.typography.bodySmall,
+
+                    modifier =
+                        Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp),
+
+                    textAlign =
+                        TextAlign.Center
                 )
             }
         }
     }
 }
 
+// =========================
+// PREVIEW
+// =========================
+
 @Preview(showBackground = true)
 @Composable
 fun DrawerMenuPreview() {
-    val navController = rememberNavController()
-    val previewViewModel = DrawerMenuViewModel()
+
+    val fakeViewModel = remember {
+        DrawerMenuViewModel()
+    }
 
     DrawerMenu(
+
         username = "Usuario Prueba",
-        navController = navController,
-        viewModel = previewViewModel
+
+        navController =
+            rememberNavController(),
+
+        viewModel =
+            fakeViewModel
     )
 }

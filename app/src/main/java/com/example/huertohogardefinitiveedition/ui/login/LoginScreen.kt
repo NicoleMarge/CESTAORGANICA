@@ -1,12 +1,12 @@
 package com.example.huertohogardefinitiveedition.ui.login
 
 import android.net.Uri
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.*
@@ -16,7 +16,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
@@ -25,7 +24,6 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
-import com.example.huertohogardefinitiveedition.R
 import com.example.huertohogardefinitiveedition.data.model.Credential
 import com.example.huertohogardefinitiveedition.data.repository.UserRepository
 import com.example.huertohogardefinitiveedition.data.session.SessionManager
@@ -68,14 +66,14 @@ fun LoginScreen(
                     modifier = Modifier.padding(bottom = 24.dp)
                 )
 
-                Image(
-                    painter = androidx.compose.ui.res.painterResource(id = R.drawable.logo_huerto_hogar),
-                    contentDescription = "Logo App",
+                // CAMBIO AQUÍ: Icono liviano temporal en lugar de la imagen pesada
+                Icon(
+                    imageVector = Icons.Default.AccountCircle,
+                    contentDescription = "Logo Temporal",
                     modifier = Modifier
-                        .fillMaxWidth()
-                        .height(150.dp)
+                        .size(120.dp)
                         .padding(bottom = 5.dp),
-                    contentScale = ContentScale.Fit
+                    tint = MaterialTheme.colorScheme.primary
                 )
 
                 Spacer(Modifier.height(30.dp))

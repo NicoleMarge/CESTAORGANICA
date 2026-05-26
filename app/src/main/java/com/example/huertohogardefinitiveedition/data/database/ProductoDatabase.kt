@@ -10,27 +10,32 @@ import com.example.huertohogardefinitiveedition.data.model.Producto
 @Database(
     entities = [Producto::class],
     version = 1,
-    exportSchema = false // evita warnings al compilar
+    exportSchema = false
 )
 abstract class ProductoDatabase : RoomDatabase() {
 
     abstract fun productoDao(): ProductoDao
 
     companion object {
+
         @Volatile
         private var INSTANCE: ProductoDatabase? = null
 
         fun getDatabase(context: Context): ProductoDatabase {
+
             return INSTANCE ?: synchronized(this) {
-                val instance = Room.databaseBuilder(
-                    context.applicationContext,
-                    ProductoDatabase::class.java,
-                    "producto_database"
-                )
-                    // 🔹 Evita que la app se cierre si cambias el modelo de datos
-                    .fallbackToDestructiveMigration()
-                    .build()
+
+                val instance =
+                    Room.databaseBuilder(
+                        context.applicationContext,
+                        ProductoDatabase::class.java,
+                        "producto_database"
+                    )
+                        .fallbackToDestructiveMigration()
+                        .build()
+
                 INSTANCE = instance
+
                 instance
             }
         }

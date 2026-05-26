@@ -10,24 +10,24 @@ import androidx.activity.viewModels
 import androidx.compose.runtime.*
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
-import com.example.huertohogardefinitiveedition.view.QrScannerScreen
 import com.example.huertohogardefinitiveedition.viewmodel.QrViewModel
 import com.example.huertohogardefinitiveedition.utils.CameraPermissionHelper
 import com.example.huertohogardefinitiveedition.navigation.AppNav
 
 class MainActivity : ComponentActivity() {
 
+    // Se inicializa de forma perezosa, pero ojo con lo que hay en su init {}
     private val qrViewModel: QrViewModel by viewModels()
 
-    // Estado del permiso de cámara
-    private var hasCameraPermission by mutableStateOf(false)
+    // Cambiamos el estado a un tipo primitivo para manejarlo de forma segura en Compose
+    private var _hasCameraPermission = false
 
-    // Launcher para pedir permiso
     private val requestPermissionLauncher =
         registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted ->
-            hasCameraPermission = isGranted
+            // Si necesitas refrescar la UI tras conceder el permiso, lo ideal es delegarlo
             if (isGranted) {
                 Toast.makeText(this, "Permiso de cámara concedido", Toast.LENGTH_SHORT).show()
+                recreate() // Reacia la actividad rápidamente para refrescar el estado visual de forma segura
             } else {
                 Toast.makeText(
                     this,
@@ -40,14 +40,16 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        // Verificar permiso inicial
-        hasCameraPermission = CameraPermissionHelper.hasCameraPermission(this)
+        _hasCameraPermission = CameraPermissionHelper.hasCameraPermission(this)
 
         setContent {
             MaterialTheme {
                 Surface {
+                    // Convertimos la variable local en un estado de Compose seguro dentro del subárbol
+                    val hasPermissionState by remember { mutableStateOf(_hasCameraPermission) }
+
                     AppNav(
-                        hasCameraPermission = hasCameraPermission,
+                        hasCameraPermission = hasPermissionState,
                         onRequestPermission = {
                             requestPermissionLauncher.launch(Manifest.permission.CAMERA)
                         }
@@ -56,20 +58,16 @@ class MainActivity : ComponentActivity() {
             }
         }
 
-        // Observa los resultados del QR
+        // Observa los resultados del QR de forma segura
         qrViewModel.qrResult.observe(this) { qrResult ->
             qrResult?.let { result ->
-                Toast.makeText(this, "Código QR detectado: ${result.content}", Toast.LENGTH_LONG)
-                    .show()
+                Toast.makeText(this, "Código QR detectado: ${result.content}", Toast.LENGTH_LONG).show()
             }
         }
     }
 
     override fun onResume() {
         super.onResume()
-        // Actualiza el estado del permiso al volver a la app
-        hasCameraPermission = CameraPermissionHelper.hasCameraPermission(this)
+        _hasCameraPermission = CameraPermissionHelper.hasCameraPermission(this)
     }
-
-
 }
