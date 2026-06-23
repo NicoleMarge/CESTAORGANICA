@@ -1,0 +1,15 @@
+[33m88183a3[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m)[m Correccion carrito y flujo Supabase
+[33m29d4c63[m Integración Supabase Usuario creado
+[33m370eae6[m Merge remote-tracking branch 'origin/main'
+[33mf66c4c9[m Integración Supabase completada
+[33me9d7b13[m Update build.gradle.kts with missing dependencies
+[33m90b4661[m Update AndroidManifest.xml
+[33me11428a[m Merge remote-tracking branch 'origin/main'
+[33m46df8a0[m Remove gotrue-kt dependency from build.gradle.kts
+[33m8fa605f[m Update SupabaseConfig.kt
+[33mc5b6902[m sin gotrue
+[33m46939f6[m keys
+[33m69f2cef[m first commit: Migracion de proyecto con registro de Supabase funcional
+[33m9ae05cb[m project title
+[33m3aa9ec9[m Rename project from 'Huerto-Hogar-Desarrollo-mobil' to 'Cesta - organica'
+[33mc2abaf9[m Subida inicial del proyecto
