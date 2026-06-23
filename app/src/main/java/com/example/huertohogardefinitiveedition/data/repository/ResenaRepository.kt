@@ -6,6 +6,7 @@ import java.util.Date
 import java.util.Locale
 
 object ResenaRepository {
+
     // Lista en memoria para guardar las reseñas.
     private val resenas = mutableListOf(
         Resena(
@@ -30,7 +31,7 @@ object ResenaRepository {
 
     private var proximoId = resenas.size + 1
 
-    // Función para añadir una nueva reseña a la lista
+    // ➕ AGREGAR RESEÑA
     fun agregarResena(
         nombreProducto: String,
         idUsuario: Int,
@@ -54,11 +55,10 @@ object ResenaRepository {
         )
     }
 
-    // Función para obtener todas las reseñas de un producto específico
+    // 📌 OBTENER RESEÑAS POR PRODUCTO
     fun obtenerResenasPorProducto(nombreProducto: String): List<Resena> {
-        return resenas.filter { it.nombreProducto.equals(nombreProducto, ignoreCase = true) }
+        return resenas.filter {
+            it.nombreProducto.equals(nombreProducto, ignoreCase = true)
+        }
     }
-
-    // LA FUNCIÓN 'actualizarStock' HA SIDO ELIMINADA DE ESTE ARCHIVO.
-    // SU LÓGICA AHORA VIVE EXCLUSIVAMENTE EN 'DrawerMenuViewModel.kt'
 }

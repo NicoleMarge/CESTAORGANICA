@@ -25,6 +25,8 @@ class CarritoViewModel : ViewModel() {
             return
         }
 
+
+
         viewModelScope.launch(Dispatchers.IO) {
 
             try {

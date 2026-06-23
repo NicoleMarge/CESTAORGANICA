@@ -42,7 +42,26 @@ fun GestionUsuarioScreen(navController: NavController) {
     MaterialTheme(colorScheme = HuertoHogarColors) {
 
         val usuarios = remember {
-            mutableStateListOf<Credential>().apply { addAll(UserRepository.all()) }
+
+            mutableStateListOf<Credential>().apply {
+
+                try {
+
+                    val lista = UserRepository.all()
+
+                    if (lista != null) {
+                        addAll(lista)
+                    }
+
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                }
+
+                // Agrega admin aunque no exista en Supabase
+                if (none { it.usuario.equals("admin", ignoreCase = true) }) {
+                    add(Credential.Admin)
+                }
+            }
         }
 
         var editOpen by remember { mutableStateOf(false) }
@@ -107,7 +126,7 @@ fun GestionUsuarioScreen(navController: NavController) {
 
                                     onClick = {
                                         menuOpen = false
-                                        navController.navigate("Gestion")
+                                        navController.navigate("gestion_usuarios")
 
 
                                     }

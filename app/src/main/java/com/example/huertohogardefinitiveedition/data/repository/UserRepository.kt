@@ -14,81 +14,125 @@ object UserRepository {
     private fun norm(s: String) = s.trim().lowercase()
 
     private fun isStrongPassword(s: String): Boolean {
+
         if (s.length < 8) return false
+
         val hasLetter = s.any { it.isLetter() }
         val hasDigit = s.any { it.isDigit() }
+
         return hasLetter && hasDigit
     }
 
     private fun isValidEmail(s: String): Boolean {
-        val emailRegex = Regex("^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$")
+
+        val emailRegex =
+            Regex("^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$")
+
         return s.matches(emailRegex)
     }
 
     private fun isPhoneCL9(s: String): Boolean {
+
         val digits = s.filter { it.isDigit() }
+
         return digits.length == 9
     }
 
     // =========================
-    // REGISTRO EN SUPABASE
+    // REGISTRO
     // =========================
 
-    fun register(user: Credential): Result<Credential> = runBlocking {
+    fun register(
+        user: Credential
+    ): Result<Credential> = runBlocking {
 
         return@runBlocking try {
 
-            val correo = user.correo.trim().lowercase()
-            val usuario = user.usuario.trim().lowercase()
+            val correo =
+                user.correo.trim().lowercase()
 
-            // VALIDACIONES
+            val usuario =
+                user.usuario.trim().lowercase()
+
+            // VALIDAR CORREO
             if (!isValidEmail(correo)) {
+
                 return@runBlocking Result.failure(
-                    IllegalArgumentException("Correo inválido")
+                    IllegalArgumentException(
+                        "Correo inválido"
+                    )
                 )
             }
 
+            // VALIDAR TELEFONO
             if (!isPhoneCL9(user.telefono)) {
+
                 return@runBlocking Result.failure(
-                    IllegalArgumentException("El teléfono debe tener 9 dígitos")
+                    IllegalArgumentException(
+                        "El teléfono debe tener 9 dígitos"
+                    )
                 )
             }
 
-            if (user.nombre.isBlank() || user.direccion.isBlank()) {
+            // VALIDAR NOMBRE Y DIRECCION
+            if (
+                user.nombre.isBlank() ||
+                user.direccion.isBlank()
+            ) {
+
                 return@runBlocking Result.failure(
-                    IllegalArgumentException("Nombre y dirección son obligatorios")
+                    IllegalArgumentException(
+                        "Nombre y dirección son obligatorios"
+                    )
                 )
             }
 
+            // VALIDAR PASSWORD
             if (!isStrongPassword(user.password)) {
+
                 return@runBlocking Result.failure(
-                    IllegalArgumentException("La contraseña no cumple los requisitos")
+                    IllegalArgumentException(
+                        "La contraseña no cumple los requisitos"
+                    )
                 )
             }
 
-            // BUSCAR SI EXISTE USUARIO
-            val usuariosExistentes = SupabaseConfig.client
-                .from("usuarios")
-                .select()
-                .decodeList<Credential>()
+            // OBTENER USUARIOS
+            val usuariosExistentes =
+                SupabaseConfig.client
+                    .from("usuarios")
+                    .select()
+                    .decodeList<Credential>()
 
-            val existeUsuario = usuariosExistentes.any {
-                norm(it.usuario) == usuario
-            }
+            // VALIDAR USUARIO EXISTENTE
+            val existeUsuario =
+                usuariosExistentes.any {
 
-            val existeCorreo = usuariosExistentes.any {
-                norm(it.correo) == correo
-            }
+                    norm(it.usuario) == usuario
+                }
+
+            // VALIDAR CORREO EXISTENTE
+            val existeCorreo =
+                usuariosExistentes.any {
+
+                    norm(it.correo) == correo
+                }
 
             if (existeUsuario) {
+
                 return@runBlocking Result.failure(
-                    IllegalArgumentException("El usuario ya existe")
+                    IllegalArgumentException(
+                        "El usuario ya existe"
+                    )
                 )
             }
 
             if (existeCorreo) {
+
                 return@runBlocking Result.failure(
-                    IllegalArgumentException("Ya existe una cuenta con ese correo")
+                    IllegalArgumentException(
+                        "Ya existe una cuenta con ese correo"
+                    )
                 )
             }
 
@@ -98,7 +142,7 @@ object UserRepository {
                 correo = correo
             )
 
-            // INSERTAR EN SUPABASE
+            // INSERTAR
             SupabaseConfig.client
                 .from("usuarios")
                 .insert(nuevoUsuario)
@@ -108,12 +152,11 @@ object UserRepository {
         } catch (e: Exception) {
 
             Result.failure(e)
-
         }
     }
 
     // =========================
-    // LOGIN DESDE SUPABASE
+    // LOGIN
     // =========================
 
     fun login(
@@ -123,92 +166,141 @@ object UserRepository {
 
         return@runBlocking try {
 
-            val q = usernameOrEmail.trim().lowercase()
+            val q =
+                usernameOrEmail.trim().lowercase()
 
-            val usuarios = SupabaseConfig.client
-                .from("usuarios")
-                .select()
-                .decodeList<Credential>()
+            // ADMIN LOCAL
+            val admin = Credential.Admin
+
+            val adminMatch = (
+
+                    admin.usuario.lowercase() == q ||
+
+                            admin.correo.lowercase() == q
+
+                    ) && admin.password == password
+
+            if (adminMatch) {
+
+                return@runBlocking Result.success(
+                    admin
+                )
+            }
+
+            // USUARIOS SUPABASE
+            val usuarios =
+                SupabaseConfig.client
+                    .from("usuarios")
+                    .select()
+                    .decodeList<Credential>()
 
             val usuario = usuarios.firstOrNull {
 
                 (
                         norm(it.usuario) == q ||
                                 norm(it.correo) == q
-                        ) &&
-                        it.password == password
+                        ) && it.password == password
             }
 
             if (usuario != null) {
+
                 Result.success(usuario)
+
             } else {
+
                 Result.failure(
-                    IllegalArgumentException("Credenciales inválidas")
-                )
-            }
-
-        } catch (e: Exception) {
-
-            Result.failure(e)
-
-        }
-    }
-
-    // =========================
-    // RECUPERAR CONTRASEÑA
-    // =========================
-
-    fun updatePassword(
-        usernameOrEmail: String,
-        newPassword: String
-    ): Result<Unit> = runBlocking {
-
-        return@runBlocking try {
-
-            val q = usernameOrEmail.trim().lowercase()
-
-            if (!isStrongPassword(newPassword)) {
-                return@runBlocking Result.failure(
                     IllegalArgumentException(
-                        "La nueva contraseña no cumple los requisitos"
+                        "Credenciales inválidas"
                     )
                 )
             }
 
-            val usuarios = SupabaseConfig.client
-                .from("usuarios")
-                .select()
-                .decodeList<Credential>()
+        } catch (e: Exception) {
 
-            val usuario = usuarios.firstOrNull {
-                norm(it.usuario) == q ||
-                        norm(it.correo) == q
-            }
+            Result.failure(e)
+        }
+    }
 
-            if (usuario == null) {
+    // =========================
+    // RECUPERAR PASSWORD
+    // =========================
+
+    fun recuperarPassword(
+        usuario: String,
+        correo: String,
+        nuevaPassword: String
+    ): Result<Boolean> = runBlocking {
+
+        return@runBlocking try {
+
+            // VALIDAR PASSWORD
+            if (!isStrongPassword(nuevaPassword)) {
+
                 return@runBlocking Result.failure(
-                    IllegalArgumentException("Usuario no encontrado")
+                    IllegalArgumentException(
+                        "La contraseña debe tener mínimo 8 caracteres, letras y números"
+                    )
                 )
             }
 
-            val actualizado = usuario.copy(
-                password = newPassword
-            )
+            val usuarioNormalizado =
+                usuario.trim().lowercase()
+
+            val correoNormalizado =
+                correo.trim().lowercase()
+
+            // OBTENER USUARIOS
+            val usuarios =
+                SupabaseConfig.client
+                    .from("usuarios")
+                    .select()
+                    .decodeList<Credential>()
+
+            // BUSCAR USUARIO
+            val usuarioEncontrado =
+                usuarios.firstOrNull {
+
+                    norm(it.usuario) ==
+                            usuarioNormalizado &&
+
+                            norm(it.correo) ==
+                            correoNormalizado
+                }
+
+            // SI NO EXISTE
+            if (usuarioEncontrado == null) {
+
+                return@runBlocking Result.failure(
+                    IllegalArgumentException(
+                        "Usuario o correo incorrecto"
+                    )
+                )
+            }
+
+            // ACTUALIZAR PASSWORD
+            val actualizado =
+                usuarioEncontrado.copy(
+                    password = nuevaPassword
+                )
 
             SupabaseConfig.client
                 .from("usuarios")
                 .update(actualizado) {
+
                     filter {
-                        eq("idUsuario", usuario.idUsuario)
+
+                        eq(
+                            "usuario",
+                            usuarioEncontrado.usuario
+                        )
                     }
                 }
 
-            Result.success(Unit)
+            Result.success(true)
 
         } catch (e: Exception) {
 
             Result.failure(e)
-
         }
     }
 
@@ -216,23 +308,35 @@ object UserRepository {
     // ACTUALIZAR USUARIO
     // =========================
 
-    fun update(user: Credential): Result<Credential> = runBlocking {
+    fun update(
+        user: Credential
+    ): Result<Credential> = runBlocking {
 
         return@runBlocking try {
 
             if (!isValidEmail(user.correo)) {
+
                 return@runBlocking Result.failure(
-                    IllegalArgumentException("Correo inválido")
+                    IllegalArgumentException(
+                        "Correo inválido"
+                    )
                 )
             }
 
             if (!isPhoneCL9(user.telefono)) {
+
                 return@runBlocking Result.failure(
-                    IllegalArgumentException("El teléfono debe tener 9 dígitos")
+                    IllegalArgumentException(
+                        "El teléfono debe tener 9 dígitos"
+                    )
                 )
             }
 
-            if (user.nombre.isBlank() || user.direccion.isBlank()) {
+            if (
+                user.nombre.isBlank() ||
+                user.direccion.isBlank()
+            ) {
+
                 return@runBlocking Result.failure(
                     IllegalArgumentException(
                         "Nombre y dirección son obligatorios"
@@ -241,6 +345,7 @@ object UserRepository {
             }
 
             if (!isStrongPassword(user.password)) {
+
                 return@runBlocking Result.failure(
                     IllegalArgumentException(
                         "La contraseña no cumple los requisitos"
@@ -249,15 +354,24 @@ object UserRepository {
             }
 
             val actualizado = user.copy(
-                usuario = user.usuario.trim().lowercase(),
-                correo = user.correo.trim().lowercase()
+
+                usuario =
+                    user.usuario.trim().lowercase(),
+
+                correo =
+                    user.correo.trim().lowercase()
             )
 
             SupabaseConfig.client
                 .from("usuarios")
                 .update(actualizado) {
+
                     filter {
-                        eq("idUsuario", user.idUsuario)
+
+                        eq(
+                            "usuario",
+                            user.usuario
+                        )
                     }
                 }
 
@@ -266,7 +380,6 @@ object UserRepository {
         } catch (e: Exception) {
 
             Result.failure(e)
-
         }
     }
 
@@ -284,18 +397,25 @@ object UserRepository {
         return@runBlocking try {
 
             if (nombre.isBlank()) {
+
                 return@runBlocking Result.failure(
-                    IllegalArgumentException("El nombre es obligatorio")
+                    IllegalArgumentException(
+                        "El nombre es obligatorio"
+                    )
                 )
             }
 
             if (direccion.isBlank()) {
+
                 return@runBlocking Result.failure(
-                    IllegalArgumentException("La dirección es obligatoria")
+                    IllegalArgumentException(
+                        "La dirección es obligatoria"
+                    )
                 )
             }
 
             if (!isPhoneCL9(telefono)) {
+
                 return@runBlocking Result.failure(
                     IllegalArgumentException(
                         "El teléfono debe tener 9 dígitos"
@@ -303,32 +423,50 @@ object UserRepository {
                 )
             }
 
-            val usuarios = SupabaseConfig.client
-                .from("usuarios")
-                .select()
-                .decodeList<Credential>()
+            val usuarios =
+                SupabaseConfig.client
+                    .from("usuarios")
+                    .select()
+                    .decodeList<Credential>()
 
-            val usuario = usuarios.firstOrNull {
-                it.idUsuario == idUsuario
-            }
+            val usuario =
+                usuarios.firstOrNull {
+
+                    it.idUsuario == idUsuario
+                }
 
             if (usuario == null) {
+
                 return@runBlocking Result.failure(
-                    IllegalArgumentException("Usuario no encontrado")
+                    IllegalArgumentException(
+                        "Usuario no encontrado"
+                    )
                 )
             }
 
-            val actualizado = usuario.copy(
-                nombre = nombre,
-                telefono = telefono.filter { it.isDigit() }.take(9),
-                direccion = direccion
-            )
+            val actualizado =
+                usuario.copy(
+
+                    nombre = nombre,
+
+                    telefono =
+                        telefono.filter {
+                            it.isDigit()
+                        }.take(9),
+
+                    direccion = direccion
+                )
 
             SupabaseConfig.client
                 .from("usuarios")
                 .update(actualizado) {
+
                     filter {
-                        eq("idUsuario", idUsuario)
+
+                        eq(
+                            "usuario",
+                            usuario.usuario
+                        )
                     }
                 }
 
@@ -337,31 +475,33 @@ object UserRepository {
         } catch (e: Exception) {
 
             Result.failure(e)
-
         }
     }
 
     // =========================
-    // OBTENER USUARIO POR ID
+    // OBTENER POR ID
     // =========================
 
-    fun getById(id: Int): Credential? = runBlocking {
+    fun getById(
+        id: Int
+    ): Credential? = runBlocking {
 
         try {
 
-            val usuarios = SupabaseConfig.client
-                .from("usuarios")
-                .select()
-                .decodeList<Credential>()
+            val usuarios =
+                SupabaseConfig.client
+                    .from("usuarios")
+                    .select()
+                    .decodeList<Credential>()
 
             usuarios.firstOrNull {
+
                 it.idUsuario == id
             }
 
         } catch (e: Exception) {
 
             null
-
         }
     }
 
@@ -381,7 +521,6 @@ object UserRepository {
         } catch (e: Exception) {
 
             emptyList()
-
         }
     }
 }

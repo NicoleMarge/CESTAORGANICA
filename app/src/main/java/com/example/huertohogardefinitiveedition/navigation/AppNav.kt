@@ -185,14 +185,20 @@ fun AppNav(
         }
 
         //------------------------------------------------
-        // HISTORIAL
+        // HISTORIAL (¡Modificado aquí! 🌟)
         //------------------------------------------------
 
         composable(
             "historial_pedidos"
         ) {
 
-            HistorialPedidosScreen()
+            HistorialPedidosScreen(
+                volverProductos = {
+                    navController.navigate(
+                        "DrawerMenu/usuario"
+                    )
+                }
+            )
         }
 
         //------------------------------------------------
@@ -203,7 +209,17 @@ fun AppNav(
             "carrito"
         ) {
 
-            CarritoScreen()
+            CarritoScreen(
+
+                volverProductos = {
+
+                    navController.navigate(
+                        "DrawerMenu/usuario"
+                    )
+
+                }
+
+            )
         }
 
         //------------------------------------------------

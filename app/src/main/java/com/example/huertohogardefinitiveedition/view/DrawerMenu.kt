@@ -677,7 +677,7 @@ fun DrawerMenu(
 
                 Text(
 
-                    text = "@ 2025 Huerto Hogar App",
+                    text = "@ 2026 Canasta Orgánica App",
 
                     style =
                         MaterialTheme.typography.bodySmall,
@@ -685,7 +685,7 @@ fun DrawerMenu(
                     modifier =
                         Modifier
                             .fillMaxWidth()
-                            .padding(16.dp),
+                            .padding(17.dp),
 
                     textAlign =
                         TextAlign.Center

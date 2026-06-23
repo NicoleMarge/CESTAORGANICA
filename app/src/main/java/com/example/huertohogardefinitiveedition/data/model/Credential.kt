@@ -1,11 +1,14 @@
 package com.example.huertohogardefinitiveedition.data.model
 
+import kotlinx.serialization.SerialName // 🌟 IMPORTACIÓN REQUERIDA
 import kotlinx.serialization.Serializable
 
 // Representa a un usuario del sistema
 @Serializable
 data class Credential(
 
+    // 🌟 ENLACE CLAVE: Le dice a Kotlin que busque la columna "id" de Supabase y la guarde en idUsuario
+    @SerialName("id")
     val idUsuario: Int = 0,
 
     // Nombre completo
@@ -42,4 +45,3 @@ data class Credential(
         )
     }
 }
-

@@ -27,6 +27,9 @@ import androidx.navigation.compose.rememberNavController
 import com.example.huertohogardefinitiveedition.data.model.Credential
 import com.example.huertohogardefinitiveedition.data.repository.UserRepository
 import com.example.huertohogardefinitiveedition.data.session.SessionManager
+import androidx.compose.ui.res.painterResource
+import com.example.huertohogardefinitiveedition.R
+import androidx.compose.foundation.Image
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -66,14 +69,12 @@ fun LoginScreen(
                     modifier = Modifier.padding(bottom = 24.dp)
                 )
 
-                // CAMBIO AQUÍ: Icono liviano temporal en lugar de la imagen pesada
-                Icon(
-                    imageVector = Icons.Default.AccountCircle,
-                    contentDescription = "Logo Temporal",
+                Image(
+                    painter = painterResource(id = R.drawable.logo_cesta),
+                    contentDescription = "Logo Cesta",
                     modifier = Modifier
-                        .size(120.dp)
-                        .padding(bottom = 5.dp),
-                    tint = MaterialTheme.colorScheme.primary
+                        .size(140.dp)
+                        .padding(bottom = 5.dp)
                 )
 
                 Spacer(Modifier.height(30.dp))
