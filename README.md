@@ -79,4 +79,4 @@ app/src/main/java/com/example/huertohogardefinitiveedition/
 
 ## 👩‍💻 Autoría
 
-Proyecto académico desarrollado por Nicole Marge.
+Proyecto académico desarrollado por grupo Duoc
